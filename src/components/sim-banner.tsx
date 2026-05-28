@@ -8,7 +8,7 @@ export function SimBanner({ color }: { color: string }) {
         borderLeft: `2px solid ${color}`,
       }}
     >
-      🔬 Demo Mode — Responses are simulated to showcase the app's architecture and prompt engineering. In production, these connect to AI models like GPT-4 or Claude.
+      🤖 Powered by AI — Responses are generated in real-time. Always verify AI-generated content before use.
     </div>
   );
 }
