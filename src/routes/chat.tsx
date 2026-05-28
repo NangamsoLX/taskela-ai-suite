@@ -1,49 +1,51 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
+import { useChat } from "@ai-sdk/react";
+import { DefaultChatTransport } from "ai";
 import { Send, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ToolHeader } from "@/components/tool-header";
 import { AiDisclaimer } from "@/components/ai-disclaimer";
 import { TOOLS } from "@/lib/tools";
-import { simulateChatReply, CHAT_STARTERS } from "@/lib/simulated-ai";
+import { CHAT_STARTERS } from "@/lib/chat-starters";
 import { SimBanner } from "@/components/sim-banner";
 
 export const Route = createFileRoute("/chat")({
   head: () => ({
     meta: [
       { title: "AI Chatbot · Taskela AI" },
-      { name: "description", content: "Chat with a simulated workplace AI assistant." },
+      { name: "description", content: "Chat with a live workplace AI assistant." },
       { property: "og:title", content: "AI Chatbot · Taskela AI" },
-      { property: "og:description", content: "Chat with a simulated workplace AI assistant." },
+      { property: "og:description", content: "Chat with a live workplace AI assistant." },
     ],
   }),
   component: ChatPage,
 });
 
-interface Msg { role: "user" | "assistant"; content: string }
-
 function ChatPage() {
   const tool = TOOLS.find((t) => t.key === "chat")!;
-  const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
-  const [typing, setTyping] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
+
+  const { messages, sendMessage, status, setMessages } = useChat({
+    transport: new DefaultChatTransport({ api: "/api/chat" }),
+    onError: (err) => toast.error(err.message || "AI request failed. Please try again."),
+  });
+
+  const isLoading = status === "submitted" || status === "streaming";
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, typing]);
+  }, [messages, status]);
 
-  const send = async (text: string) => {
+  const send = (text: string) => {
     const trimmed = text.trim();
-    if (!trimmed || typing) return;
-    setMessages((m) => [...m, { role: "user", content: trimmed }]);
+    if (!trimmed || isLoading) return;
+    sendMessage({ text: trimmed });
     setInput("");
-    setTyping(true);
-    const reply = await simulateChatReply(trimmed);
-    setTyping(false);
-    setMessages((m) => [...m, { role: "assistant", content: reply }]);
   };
 
   return (
@@ -76,24 +78,29 @@ function ChatPage() {
             </div>
           )}
 
-          {messages.map((m, i) => (
-            <div key={i} className={m.role === "user" ? "flex justify-end" : "flex justify-start"}>
-              {m.role === "user" ? (
-                <div
-                  className="max-w-[80%] rounded-2xl px-4 py-2.5 text-sm text-white"
-                  style={{ backgroundColor: tool.colorVar }}
-                >
-                  {m.content}
-                </div>
-              ) : (
-                <div className="prose prose-sm dark:prose-invert max-w-[85%] text-foreground">
-                  <ReactMarkdown>{m.content}</ReactMarkdown>
-                </div>
-              )}
-            </div>
-          ))}
+          {messages.map((m) => {
+            const text = m.parts
+              .map((p) => (p.type === "text" ? p.text : ""))
+              .join("");
+            return (
+              <div key={m.id} className={m.role === "user" ? "flex justify-end" : "flex justify-start"}>
+                {m.role === "user" ? (
+                  <div
+                    className="max-w-[80%] rounded-2xl px-4 py-2.5 text-sm text-white"
+                    style={{ backgroundColor: tool.colorVar }}
+                  >
+                    {text}
+                  </div>
+                ) : (
+                  <div className="prose prose-sm dark:prose-invert max-w-[85%] text-foreground">
+                    <ReactMarkdown>{text}</ReactMarkdown>
+                  </div>
+                )}
+              </div>
+            );
+          })}
 
-          {typing && (
+          {status === "submitted" && (
             <div className="flex justify-start">
               <div className="flex gap-1 rounded-full bg-muted px-3 py-2">
                 <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-foreground/60 [animation-delay:-0.3s]" />
@@ -114,9 +121,9 @@ function ChatPage() {
             onChange={(e) => setInput(e.target.value)}
             placeholder="Ask Taskela anything…"
             className="flex-1"
-            disabled={typing}
+            disabled={isLoading}
           />
-          <Button type="submit" disabled={typing || !input.trim()} size="icon" style={{ backgroundColor: tool.colorVar }}>
+          <Button type="submit" disabled={isLoading || !input.trim()} size="icon" style={{ backgroundColor: tool.colorVar }}>
             <Send className="h-4 w-4" />
           </Button>
           <Button type="button" variant="ghost" size="icon" onClick={() => setMessages([])} disabled={!messages.length}>

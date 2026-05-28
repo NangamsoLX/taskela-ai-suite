@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { Copy, RefreshCw, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -11,7 +12,13 @@ import { PromptViewer } from "@/components/prompt-viewer";
 import { AiDisclaimer } from "@/components/ai-disclaimer";
 import { SimBanner } from "@/components/sim-banner";
 import { TOOLS } from "@/lib/tools";
-import { simulateEmail, type EmailRole, type EmailTone, type GeneratedEmail } from "@/lib/simulated-ai";
+import { generateEmailFn } from "@/lib/ai-tools.functions";
+
+type EmailRole = "Client" | "Manager" | "Team Member";
+type EmailTone = "Formal" | "Friendly" | "Persuasive";
+interface GeneratedEmail {
+  subject: string; greeting: string; body: string; signoff: string; prompt: string;
+}
 
 export const Route = createFileRoute("/email")({
   head: () => ({
@@ -34,12 +41,22 @@ function EmailPage() {
   const [tone, setTone] = useState<EmailTone>("Formal");
   const [loading, setLoading] = useState(false);
   const [out, setOut] = useState<GeneratedEmail | null>(null);
+  const callEmail = useServerFn(generateEmailFn);
 
   const generate = async () => {
+    if (!topic.trim()) {
+      toast.error("Add some context for the email first.");
+      return;
+    }
     setLoading(true);
-    const result = await simulateEmail(role, topic, tone);
-    setOut(result);
-    setLoading(false);
+    try {
+      const res = await callEmail({ data: { role, topic, tone } });
+      setOut({ ...res.data, prompt: res.prompt });
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "AI request failed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const copy = () => {
