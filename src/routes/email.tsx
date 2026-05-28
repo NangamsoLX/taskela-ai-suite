@@ -9,6 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ToolHeader } from "@/components/tool-header";
 import { PromptViewer } from "@/components/prompt-viewer";
 import { AiDisclaimer } from "@/components/ai-disclaimer";
+import { SimBanner } from "@/components/sim-banner";
 import { TOOLS } from "@/lib/tools";
 import { simulateEmail, type EmailRole, type EmailTone, type GeneratedEmail } from "@/lib/simulated-ai";
 
@@ -57,6 +58,8 @@ function EmailPage() {
         title={tool.name}
         description="Pick an audience and tone, share the context, and get a polished draft."
       />
+
+      <SimBanner color={tool.colorVar} />
 
       <div className="grid gap-5 rounded-xl border bg-card p-5 md:grid-cols-2">
         <div>

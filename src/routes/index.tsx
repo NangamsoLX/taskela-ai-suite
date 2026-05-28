@@ -34,9 +34,8 @@ function Index() {
         <p className="mx-auto mt-8 max-w-2xl text-base text-muted-foreground md:text-lg">
           Your AI-Powered Workplace Productivity Suite
         </p>
-        <p className="mx-auto mt-4 max-w-xl text-sm leading-relaxed text-muted-foreground/80">
-          Automate the repetitive — drafting emails, summarizing meetings,
-          planning schedules, conducting research — so you can focus on what matters.
+        <p className="mx-auto my-6 max-w-2xl text-center text-sm leading-relaxed text-muted-foreground">
+          Professionals across industries spend significant time on repetitive tasks — drafting emails, summarizing meetings, planning schedules, and conducting research. Taskela AI solves this by automating these processes with intelligent AI, so you can focus on the work that truly matters.
         </p>
       </section>
 

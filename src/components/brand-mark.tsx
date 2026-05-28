@@ -19,7 +19,7 @@ export function BrandMark({ size = "md", tagline = false, className = "" }: Prop
       >
         <span className="text-foreground">Taskela</span>{" "}
         <span
-          className="bg-clip-text text-transparent"
+          className="animate-pulse-glow bg-clip-text text-transparent"
           style={{
             backgroundImage: "linear-gradient(135deg, #A78BFA 0%, #C4B5FD 100%)",
             WebkitBackgroundClip: "text",

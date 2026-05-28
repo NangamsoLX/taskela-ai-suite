@@ -8,6 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ToolHeader } from "@/components/tool-header";
 import { PromptViewer } from "@/components/prompt-viewer";
 import { AiDisclaimer } from "@/components/ai-disclaimer";
+import { SimBanner } from "@/components/sim-banner";
 import { TOOLS } from "@/lib/tools";
 import { simulateResearch, type ResearchOutput } from "@/lib/simulated-ai";
 
@@ -52,6 +53,8 @@ function ResearchPage() {
         title={tool.name}
         description="Type a topic or question. We'll return a structured brief you can act on."
       />
+
+      <SimBanner color={tool.colorVar} />
 
       <div className="rounded-xl border bg-card p-5 space-y-4">
         <div>

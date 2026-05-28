@@ -10,6 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ToolHeader } from "@/components/tool-header";
 import { PromptViewer } from "@/components/prompt-viewer";
 import { AiDisclaimer } from "@/components/ai-disclaimer";
+import { SimBanner } from "@/components/sim-banner";
 import { TOOLS } from "@/lib/tools";
 import { simulatePlan, type GeneratedPlan, type PlanScope, type Priority } from "@/lib/simulated-ai";
 
@@ -66,6 +67,8 @@ function PlannerPage() {
         title={tool.name}
         description="Describe what you need to get done. We'll structure it into time blocks."
       />
+
+      <SimBanner color={tool.colorVar} />
 
       <div className="rounded-xl border bg-card p-5 space-y-4">
         <div>

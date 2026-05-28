@@ -7,7 +7,8 @@ import { Input } from "@/components/ui/input";
 import { ToolHeader } from "@/components/tool-header";
 import { AiDisclaimer } from "@/components/ai-disclaimer";
 import { TOOLS } from "@/lib/tools";
-import { simulateChatReply } from "@/lib/simulated-ai";
+import { simulateChatReply, CHAT_STARTERS } from "@/lib/simulated-ai";
+import { SimBanner } from "@/components/sim-banner";
 
 export const Route = createFileRoute("/chat")({
   head: () => ({
@@ -22,13 +23,6 @@ export const Route = createFileRoute("/chat")({
 });
 
 interface Msg { role: "user" | "assistant"; content: string }
-
-const STARTERS = [
-  "Help me plan my day",
-  "Summarize this document",
-  "Draft a quick email",
-  "What are best practices for time management?",
-];
 
 function ChatPage() {
   const tool = TOOLS.find((t) => t.key === "chat")!;
@@ -61,6 +55,7 @@ function ChatPage() {
         title={tool.name}
         description="A workplace assistant for quick planning, drafting, and answers."
       />
+      <SimBanner color={tool.colorVar} />
 
       <div className="flex min-h-[480px] flex-col rounded-xl border bg-card">
         <div className="flex-1 space-y-4 overflow-y-auto p-5">
@@ -68,7 +63,7 @@ function ChatPage() {
             <div className="py-8 text-center">
               <p className="text-sm text-muted-foreground">Start with a suggestion:</p>
               <div className="mx-auto mt-4 flex max-w-2xl flex-wrap justify-center gap-2">
-                {STARTERS.map((s) => (
+                {CHAT_STARTERS.map((s) => (
                   <button
                     key={s}
                     onClick={() => send(s)}
