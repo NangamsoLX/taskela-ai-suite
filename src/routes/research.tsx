@@ -8,6 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ToolHeader } from "@/components/tool-header";
 import { PromptViewer } from "@/components/prompt-viewer";
 import { AiDisclaimer } from "@/components/ai-disclaimer";
+import { SimBanner } from "@/components/sim-banner";
 import { TOOLS } from "@/lib/tools";
 import { simulateResearch, type ResearchOutput } from "@/lib/simulated-ai";
 
