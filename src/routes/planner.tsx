@@ -68,6 +68,8 @@ function PlannerPage() {
         description="Describe what you need to get done. We'll structure it into time blocks."
       />
 
+      <SimBanner color={tool.colorVar} />
+
       <div className="rounded-xl border bg-card p-5 space-y-4">
         <div>
           <label className="tracking-label mb-2 block">Tasks, goals, or priorities</label>
