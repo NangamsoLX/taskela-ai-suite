@@ -14,7 +14,10 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { TOOLS } from "@/lib/tools";
-import logo from "@/assets/taskela-logo.png";
+import { BrandMark } from "@/components/brand-mark";
+
+const NAV_ACTIVE =
+  "data-[active=true]:bg-white/[0.04] data-[active=true]:text-foreground data-[active=true]:shadow-[inset_2px_0_0_0_var(--nav-accent,var(--accent))]";
 
 export function AppSidebar() {
   const { state } = useSidebar();
@@ -24,23 +27,28 @@ export function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon">
-      <SidebarHeader className="border-b border-sidebar-border">
-        <Link to="/" className="flex items-center justify-center py-3">
+      <SidebarHeader className="border-b border-sidebar-border py-5">
+        <Link to="/" className="flex items-center justify-center">
           {collapsed ? (
-            <img src={logo} alt="Taskela AI" className="h-8 w-8 object-contain" />
+            <span
+              className="text-xl font-semibold bg-clip-text text-transparent"
+              style={{ backgroundImage: "linear-gradient(135deg, #A78BFA, #C4B5FD)", fontFamily: '"Space Grotesk", sans-serif' }}
+            >
+              T
+            </span>
           ) : (
-            <img src={logo} alt="Taskela AI" style={{ width: 140 }} className="object-contain" />
+            <BrandMark size="sm" tagline />
           )}
         </Link>
       </SidebarHeader>
 
-      <SidebarContent>
+      <SidebarContent className="px-1 py-3">
         <SidebarGroup>
-          <SidebarGroupLabel>Overview</SidebarGroupLabel>
+          {!collapsed && <SidebarGroupLabel>Overview</SidebarGroupLabel>}
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className="gap-1.5">
               <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={isActive("/")}>
+                <SidebarMenuButton asChild isActive={isActive("/")} className={NAV_ACTIVE}>
                   <Link to="/">
                     <Home className="h-4 w-4" />
                     <span>Home</span>
@@ -52,21 +60,21 @@ export function AppSidebar() {
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel>AI Tools</SidebarGroupLabel>
+          {!collapsed && <SidebarGroupLabel>AI Tools</SidebarGroupLabel>}
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className="gap-1.5">
               {TOOLS.map((t) => {
                 const Icon = t.icon;
                 return (
                   <SidebarMenuItem key={t.key}>
-                    <SidebarMenuButton asChild isActive={isActive(t.to)}>
-                      <Link to={t.to} className="group">
-                        <span
-                          className="inline-block h-2.5 w-2.5 rounded-full shrink-0"
-                          style={{ backgroundColor: t.colorVar }}
-                          aria-hidden
-                        />
-                        <Icon className="h-4 w-4" />
+                    <SidebarMenuButton
+                      asChild
+                      isActive={isActive(t.to)}
+                      className={NAV_ACTIVE}
+                      style={{ ["--nav-accent" as string]: t.colorVar } as React.CSSProperties}
+                    >
+                      <Link to={t.to}>
+                        <Icon className="h-4 w-4" style={{ color: isActive(t.to) ? t.colorVar : undefined }} />
                         <span>{t.name}</span>
                       </Link>
                     </SidebarMenuButton>
@@ -78,11 +86,11 @@ export function AppSidebar() {
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel>About</SidebarGroupLabel>
+          {!collapsed && <SidebarGroupLabel>About</SidebarGroupLabel>}
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className="gap-1.5">
               <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={isActive("/responsible-ai")}>
+                <SidebarMenuButton asChild isActive={isActive("/responsible-ai")} className={NAV_ACTIVE}>
                   <Link to="/responsible-ai">
                     <Shield className="h-4 w-4" />
                     <span>Responsible AI</span>
@@ -90,7 +98,7 @@ export function AppSidebar() {
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={isActive("/about")}>
+                <SidebarMenuButton asChild isActive={isActive("/about")} className={NAV_ACTIVE}>
                   <Link to="/about">
                     <Info className="h-4 w-4" />
                     <span>About</span>
@@ -104,8 +112,8 @@ export function AppSidebar() {
 
       <SidebarFooter className="border-t border-sidebar-border">
         {!collapsed && (
-          <p className="px-2 py-2 text-[10px] leading-snug text-muted-foreground">
-            Tasking For You · Inspired by Kandinsky's synesthetic colour theory.
+          <p className="px-2 py-2 text-[10px] text-muted-foreground">
+            © Taskela AI
           </p>
         )}
       </SidebarFooter>

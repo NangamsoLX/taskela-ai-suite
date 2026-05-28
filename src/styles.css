@@ -49,7 +49,7 @@
 }
 
 :root {
-  --radius: 0.5rem;
+  --radius: 0.875rem;
   /* light: warm canvas white */
   --background: oklch(0.975 0.008 80);
   --foreground: oklch(0.18 0.03 260);
@@ -72,11 +72,20 @@
   --ring: oklch(0.78 0.13 295);
 
   /* Kandinsky tool colors */
-  --tool-chat: oklch(0.36 0.11 255);      /* #1A3A6B deep blue cello */
-  --tool-email: oklch(0.81 0.16 80);      /* #F5B731 gold trumpet */
-  --tool-planner: oklch(0.61 0.22 25);    /* #E63946 vermilion tuba */
-  --tool-meeting: oklch(0.73 0.15 50);    /* #F4845F orange bell */
-  --tool-research: oklch(0.62 0.1 180);   /* #2A9D8F teal violin */
+  --tool-chat: oklch(0.36 0.11 255);
+  --tool-email: oklch(0.81 0.16 80);
+  --tool-planner: oklch(0.61 0.22 25);
+  --tool-meeting: oklch(0.73 0.15 50);
+  --tool-research: oklch(0.62 0.1 180);
+
+  --glow-chat: rgba(26, 58, 107, 0.25);
+  --glow-email: rgba(245, 183, 49, 0.2);
+  --glow-planner: rgba(230, 57, 70, 0.2);
+  --glow-meeting: rgba(244, 132, 95, 0.2);
+  --glow-research: rgba(42, 157, 143, 0.2);
+
+  --glass-bg: rgba(255, 255, 255, 0.6);
+  --glass-border: rgba(0, 0, 0, 0.08);
 
   --success: oklch(0.62 0.1 180);
   --warning: oklch(0.81 0.16 80);
@@ -110,17 +119,20 @@
   --accent-foreground: oklch(0.18 0.025 260);
   --destructive: oklch(0.62 0.22 25);
   --destructive-foreground: oklch(0.98 0 0);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 12%);
+  --border: oklch(1 0 0 / 8%);
+  --input: oklch(1 0 0 / 10%);
   --ring: oklch(0.78 0.13 295);
 
-  --sidebar: oklch(0.15 0.025 260);
+  --glass-bg: rgba(255, 255, 255, 0.03);
+  --glass-border: rgba(255, 255, 255, 0.08);
+
+  --sidebar: oklch(0.16 0.025 260);
   --sidebar-foreground: oklch(0.95 0.005 80);
   --sidebar-primary: oklch(0.78 0.13 295);
   --sidebar-primary-foreground: oklch(0.18 0.025 260);
   --sidebar-accent: oklch(0.24 0.03 260);
   --sidebar-accent-foreground: oklch(0.98 0.005 80);
-  --sidebar-border: oklch(1 0 0 / 8%);
+  --sidebar-border: oklch(1 0 0 / 6%);
   --sidebar-ring: oklch(0.78 0.13 295);
 }
 
@@ -145,5 +157,24 @@
     text-transform: uppercase;
     font-size: 0.7rem;
     color: var(--muted-foreground);
+  }
+}
+
+@layer components {
+  .glass-card {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-radius: 1rem;
+    transition: transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease;
+  }
+  .glass-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(255, 255, 255, 0.14);
+    box-shadow: 0 0 32px var(--glow, rgba(167, 139, 250, 0.18));
+  }
+  .transition-smooth {
+    transition: all 200ms ease;
   }
 }
