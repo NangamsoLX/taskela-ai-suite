@@ -62,6 +62,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "author", content: "Nangamso Xengana" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
+      { property: "og:title", content: "Taskela AI — Tasking For You" },
+      { name: "twitter:title", content: "Taskela AI — Tasking For You" },
+      { property: "og:description", content: "An AI-powered workplace productivity suite that drafts emails, plans your day, summarizes meetings, and runs research." },
+      { name: "twitter:description", content: "An AI-powered workplace productivity suite that drafts emails, plans your day, summarizes meetings, and runs research." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/c73aa5da-a244-49cc-95dd-2446c40e9522/id-preview-37fab0c5--fc94a556-4060-47be-a32f-977487ce38b6.lovable.app-1779966149547.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/c73aa5da-a244-49cc-95dd-2446c40e9522/id-preview-37fab0c5--fc94a556-4060-47be-a32f-977487ce38b6.lovable.app-1779966149547.png" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
