@@ -7,7 +7,8 @@ import { Input } from "@/components/ui/input";
 import { ToolHeader } from "@/components/tool-header";
 import { AiDisclaimer } from "@/components/ai-disclaimer";
 import { TOOLS } from "@/lib/tools";
-import { simulateChatReply } from "@/lib/simulated-ai";
+import { simulateChatReply, CHAT_STARTERS } from "@/lib/simulated-ai";
+import { SimBanner } from "@/components/sim-banner";
 
 export const Route = createFileRoute("/chat")({
   head: () => ({
