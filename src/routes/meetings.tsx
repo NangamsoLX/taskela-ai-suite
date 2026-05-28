@@ -54,6 +54,8 @@ function MeetingsPage() {
         description="Paste raw notes or a transcript — we'll extract what matters."
       />
 
+      <SimBanner color={tool.colorVar} />
+
       <div className="rounded-xl border bg-card p-5 space-y-4">
         <div>
           <label className="tracking-label mb-2 block">Meeting notes or transcript</label>
