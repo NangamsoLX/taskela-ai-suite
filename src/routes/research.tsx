@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { Copy, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -10,7 +11,15 @@ import { PromptViewer } from "@/components/prompt-viewer";
 import { AiDisclaimer } from "@/components/ai-disclaimer";
 import { SimBanner } from "@/components/sim-banner";
 import { TOOLS } from "@/lib/tools";
-import { simulateResearch, type ResearchOutput } from "@/lib/simulated-ai";
+import { researchTopicFn } from "@/lib/ai-tools.functions";
+
+interface ResearchOutput {
+  overview: string;
+  insights: { title: string; detail: string }[];
+  recommendations: string[];
+  simple: string;
+  prompt: string;
+}
 
 export const Route = createFileRoute("/research")({
   head: () => ({
@@ -29,12 +38,19 @@ function ResearchPage() {
   const [topic, setTopic] = useState("");
   const [loading, setLoading] = useState(false);
   const [out, setOut] = useState<ResearchOutput | null>(null);
+  const callResearch = useServerFn(researchTopicFn);
 
   const research = async () => {
+    if (!topic.trim()) { toast.error("Add a topic or question first."); return; }
     setLoading(true);
-    const r = await simulateResearch(topic);
-    setOut(r);
-    setLoading(false);
+    try {
+      const res = await callResearch({ data: { topic } });
+      setOut({ ...res.data, prompt: res.prompt });
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "AI request failed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const copy = () => {

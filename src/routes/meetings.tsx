@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { Copy, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -10,7 +11,12 @@ import { PromptViewer } from "@/components/prompt-viewer";
 import { AiDisclaimer } from "@/components/ai-disclaimer";
 import { SimBanner } from "@/components/sim-banner";
 import { TOOLS } from "@/lib/tools";
-import { simulateMeetingSummary, type MeetingSummary } from "@/lib/simulated-ai";
+import { summarizeMeetingFn } from "@/lib/ai-tools.functions";
+
+interface ActionItem { task: string; owner: string; deadline: string }
+interface MeetingSummary {
+  summary: string; decisions: string[]; actions: ActionItem[]; deadlines: string[]; prompt: string;
+}
 
 export const Route = createFileRoute("/meetings")({
   head: () => ({
@@ -29,12 +35,19 @@ function MeetingsPage() {
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
   const [out, setOut] = useState<MeetingSummary | null>(null);
+  const callSummary = useServerFn(summarizeMeetingFn);
 
   const summarize = async () => {
+    if (!notes.trim()) { toast.error("Paste some meeting notes first."); return; }
     setLoading(true);
-    const r = await simulateMeetingSummary(notes);
-    setOut(r);
-    setLoading(false);
+    try {
+      const res = await callSummary({ data: { notes } });
+      setOut({ ...res.data, prompt: res.prompt });
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "AI request failed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const copy = () => {

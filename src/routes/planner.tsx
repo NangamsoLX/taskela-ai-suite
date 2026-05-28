@@ -138,12 +138,12 @@ function PlannerPage() {
           <div className="rounded-xl border bg-card p-5">
             <h3 className="mb-4 text-lg font-semibold">{out.scope}</h3>
             <ul className="space-y-2">
-              {out.tasks.map((t) => (
-                <li key={t.id} className="flex items-center gap-3 rounded-md border p-3 transition-colors hover:bg-muted/40">
-                  <Checkbox checked={done.has(t.id)} onCheckedChange={() => toggle(t.id)} />
+              {out.tasks.map((t, idx) => (
+                <li key={idx} className="flex items-center gap-3 rounded-md border p-3 transition-colors hover:bg-muted/40">
+                  <Checkbox checked={done.has(idx)} onCheckedChange={() => toggle(idx)} />
                   <div className="flex-1">
                     <div className="text-xs text-muted-foreground">{t.time}</div>
-                    <div className={`text-sm ${done.has(t.id) ? "line-through text-muted-foreground" : ""}`}>{t.title}</div>
+                    <div className={`text-sm ${done.has(idx) ? "line-through text-muted-foreground" : ""}`}>{t.title}</div>
                   </div>
                   <span
                     className="rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-white"
@@ -156,10 +156,8 @@ function PlannerPage() {
             </ul>
 
             <div className="mt-5 rounded-lg bg-muted/40 p-4">
-              <p className="tracking-label mb-2">Optimization tips</p>
-              <ul className="list-disc space-y-1 pl-4 text-sm">
-                {out.suggestions.map((s, i) => <li key={i}>{s}</li>)}
-              </ul>
+              <p className="tracking-label mb-2">Optimization tip</p>
+              <p className="text-sm">{out.optimizationTip}</p>
             </div>
 
             <PromptViewer prompt={out.prompt} />
