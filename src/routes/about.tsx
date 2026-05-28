@@ -25,10 +25,14 @@ function About() {
         Deep blue is a cello, yellow is a trumpet, red is a tuba, orange is a church bell, teal is a quiet violin.
       </p>
 
-      <div className="mt-8 grid gap-3 sm:grid-cols-2">
+      <h2 className="mt-12 text-xl font-semibold">Synesthetic Color Palette</h2>
+      <p className="mt-2 text-sm text-muted-foreground">
+        Each tool carries a colour and the instrument Kandinsky associated with it.
+      </p>
+      <div className="mt-6 grid gap-3 sm:grid-cols-2">
         {TOOLS.map((t) => (
-          <div key={t.key} className="flex items-center gap-3 rounded-lg border bg-card p-4">
-            <span className="h-8 w-8 rounded-md" style={{ backgroundColor: t.colorVar }} />
+          <div key={t.key} className="glass-card flex items-center gap-3 p-4">
+            <span className="h-8 w-8 rounded-md shrink-0" style={{ backgroundColor: t.colorVar }} />
             <div>
               <p className="text-sm font-semibold">{t.name}</p>
               <p className="text-xs text-muted-foreground">{t.kandinsky}</p>

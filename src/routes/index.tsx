@@ -1,7 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight } from "lucide-react";
 import { TOOLS } from "@/lib/tools";
-import logo from "@/assets/taskela-logo.png";
+import { BrandMark } from "@/components/brand-mark";
+
+const GLOWS: Record<string, string> = {
+  chat: "var(--glow-chat)",
+  email: "var(--glow-email)",
+  planner: "var(--glow-planner)",
+  meeting: "var(--glow-meeting)",
+  research: "var(--glow-research)",
+};
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -16,59 +24,52 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
+  const top = TOOLS.slice(0, 3);
+  const bottom = TOOLS.slice(3);
+
   return (
-    <div className="mx-auto max-w-6xl px-6 py-12 md:py-16">
+    <div className="mx-auto max-w-6xl px-6 py-20 md:px-10 md:py-32">
       <section className="text-center">
-        <img
-          src={logo}
-          alt="Taskela AI"
-          style={{ width: 200 }}
-          className="mx-auto object-contain dark:invert-0"
-        />
-        <p className="tracking-label mt-6">Tasking For You</p>
-        <h1 className="mt-3 text-4xl font-bold md:text-6xl">
-          Taskela <span className="text-accent">AI</span>
-        </h1>
-        <p className="mx-auto mt-4 max-w-2xl text-base text-muted-foreground md:text-lg">
+        <BrandMark size="xl" />
+        <p className="mx-auto mt-8 max-w-2xl text-base text-muted-foreground md:text-lg">
           Your AI-Powered Workplace Productivity Suite
         </p>
-        <p className="mx-auto mt-4 max-w-2xl text-sm text-muted-foreground">
-          Professionals spend hours on repetitive tasks like drafting emails, summarizing meetings,
-          planning schedules, and conducting research. Taskela AI automates these with intelligent
-          AI — so you can focus on what matters.
+        <p className="mx-auto mt-4 max-w-xl text-sm leading-relaxed text-muted-foreground/80">
+          Automate the repetitive — drafting emails, summarizing meetings,
+          planning schedules, conducting research — so you can focus on what matters.
         </p>
       </section>
 
-      <section className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-        {TOOLS.map((t) => {
-          const Icon = t.icon;
-          return (
-            <Link
-              key={t.key}
-              to={t.to}
-              className="group relative flex flex-col rounded-xl border bg-card p-5 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
-            >
-              <span
-                className="absolute left-0 top-0 h-full w-1 rounded-l-xl"
-                style={{ backgroundColor: t.colorVar }}
-                aria-hidden
-              />
-              <div
-                className="flex h-11 w-11 items-center justify-center rounded-lg text-white"
-                style={{ backgroundColor: t.colorVar }}
-              >
-                <Icon className="h-5 w-5" />
-              </div>
-              <p className="tracking-label mt-4">{t.kandinsky}</p>
-              <h3 className="mt-1 text-lg font-semibold">{t.name}</h3>
-              <p className="mt-2 text-sm text-muted-foreground">{t.description}</p>
-              <span className="mt-4 inline-flex items-center gap-1 text-xs font-medium text-accent opacity-0 transition-opacity group-hover:opacity-100">
-                Open tool <ArrowRight className="h-3 w-3" />
-              </span>
-            </Link>
-          );
-        })}
+      <section className="mt-20 grid gap-5 md:grid-cols-3">
+        {top.map((t) => (
+          <ToolCard key={t.key} t={t} />
+        ))}
+      </section>
+      <section className="mt-5 grid gap-5 md:grid-cols-2">
+        {bottom.map((t) => (
+          <ToolCard key={t.key} t={t} />
+        ))}
       </section>
     </div>
+  );
+}
+
+function ToolCard({ t }: { t: (typeof TOOLS)[number] }) {
+  const Icon = t.icon;
+  return (
+    <Link
+      to={t.to}
+      className="glass-card group flex flex-col p-6"
+      style={{ ["--glow" as string]: GLOWS[t.key] } as React.CSSProperties}
+    >
+      <div className="flex items-center gap-2.5">
+        <Icon className="h-5 w-5" style={{ color: t.colorVar }} />
+        <h3 className="text-base font-semibold">{t.name}</h3>
+      </div>
+      <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{t.description}</p>
+      <span className="mt-6 inline-flex items-center gap-1 text-xs text-muted-foreground transition-colors group-hover:text-accent">
+        Open <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
+      </span>
+    </Link>
   );
 }
