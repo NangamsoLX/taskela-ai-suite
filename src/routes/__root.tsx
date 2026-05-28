@@ -103,11 +103,8 @@ function RootComponent() {
         <div className="min-h-screen flex w-full bg-background">
           <AppSidebar />
           <div className="flex-1 flex flex-col min-w-0">
-            <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-2 border-b bg-background/80 px-4 backdrop-blur">
-              <div className="flex items-center gap-2">
-                <SidebarTrigger />
-                <span className="tracking-label hidden sm:inline">Taskela AI · Tasking For You</span>
-              </div>
+            <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-2 bg-background/70 px-6 backdrop-blur-md">
+              <SidebarTrigger />
               <ThemeToggle />
             </header>
             <main className="flex-1">
