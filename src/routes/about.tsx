@@ -49,7 +49,7 @@ function About() {
         </p>
         <div className="mt-4">
           <a
-            href="https://github.com"
+            href="https://github.com/NangamsoLX/taskela-ai-suite"
             target="_blank"
             rel="noreferrer"
             className="inline-flex items-center gap-2 rounded-md border px-3 py-1.5 text-sm transition-colors hover:border-accent hover:text-accent"
