@@ -54,6 +54,8 @@ function ResearchPage() {
         description="Type a topic or question. We'll return a structured brief you can act on."
       />
 
+      <SimBanner color={tool.colorVar} />
+
       <div className="rounded-xl border bg-card p-5 space-y-4">
         <div>
           <label className="tracking-label mb-2 block">Topic or question</label>
