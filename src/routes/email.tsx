@@ -59,6 +59,8 @@ function EmailPage() {
         description="Pick an audience and tone, share the context, and get a polished draft."
       />
 
+      <SimBanner color={tool.colorVar} />
+
       <div className="grid gap-5 rounded-xl border bg-card p-5 md:grid-cols-2">
         <div>
           <label className="tracking-label mb-2 block">Recipient</label>
