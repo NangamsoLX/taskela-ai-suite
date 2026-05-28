@@ -1,79 +1,46 @@
-## Goal
-Elevate Taskela AI to a calm, spacious, premium aesthetic (Claude/Gemini-class) and fix the logo artifact by replacing the PNG with a styled text wordmark everywhere it appears.
+## 1. Pulsing glow on "AI" wordmark
+- In `src/styles.css`, add a `@keyframes pulse-glow` cycling `opacity: 1 → 0.6 → 1` with a parallel `text-shadow` fading from `0 0 0 transparent` → `0 0 24px rgba(167,139,250,0.55)` → `0 0 0 transparent`. Expose as utility class `.animate-pulse-glow { animation: pulse-glow 3s ease-in-out infinite; }`.
+- In `src/components/brand-mark.tsx`, apply `animate-pulse-glow` to the "AI" gradient span. Effect applies for all sizes (sidebar + hero) since both render the same span.
 
-## 1. Brand wordmark (replaces logo PNG)
-Create `src/components/brand-mark.tsx` — renders:
-- "Taskela" in Space Grotesk 600, foreground white
-- "AI" in a lavender → accent gradient (`#A78BFA` → existing `--accent`) via `bg-clip-text`
-- Size prop: `sm` (sidebar ~20px), `xl` (hero ~64px)
-- Optional `tagline` prop renders "Tasking For You" below in `.tracking-label`
+## 2. Restore hero problem statement
+- In `src/routes/index.tsx`, between the "Your AI-Powered Workplace Productivity Suite" subtitle and the feature card grid, insert a `<p className="mx-auto my-6 max-w-2xl text-center text-muted-foreground">` containing the exact paragraph the user supplied.
 
-Remove all `import logo from "@/assets/taskela-logo.png"` usages (sidebar, hero). Favicon stays as-is (already a PNG file in /public).
+## 3. Rebuild simulated AI outputs (`src/lib/simulated-ai.ts`)
+The existing file already exports the right shapes, but the prompt asks me to make each generator richer, contextual, and guaranteed-non-empty. I'll rewrite each function so:
+- `simulateChatReply(message)` — returns a 2–3 paragraph contextual response that echoes a sanitized snippet of the user's message; export a `CHAT_STARTERS` array with the four prompts the user listed so `chat.tsx` can render them as chips.
+- `simulateEmail(role, topic, tone)` — returns `{ subject, greeting, body (2-3 paragraphs joined by `\n\n`), signoff, prompt }`. `prompt` follows the format: `"Generate a {tone} email to a {role} about: {topic}. Tone: {tone}. Ensure ..."`.
+- `simulatePlan(input, scope, priority)` — returns 5–7 tasks (each with time block, title that references the user input when present, priority) + a single `optimizationTip` string + `prompt`. (Adds `optimizationTip`; keeps `suggestions` for backwards compat by mirroring it as `[optimizationTip]`.)
+- `simulateMeetingSummary(notes)` — returns `summary`, `decisions[3]`, `actions[3]` (task/owner/deadline), `deadlines[2-3]`, `prompt`. Summary and decisions reference up to 120 chars of the user's notes verbatim.
+- `simulateResearch(topic)` — returns `overview`, `insights[3]` (`title` + `detail`), `recommendations[3]`, `simple`, `prompt`. All sentences embed the topic string.
+- Every function awaits `fakeDelay(800, 1500)` per spec and is wrapped in `try/catch` only where needed; no `navigator`, `window`, or `Math.random()` at module scope (already safe — `fakeDelay` is called inside the async fn).
 
-## 2. Design tokens (`src/styles.css`)
-Add:
-- `--lavender: oklch(0.78 0.13 295)` (already ~accent, keep both names)
-- `--gradient-brand: linear-gradient(135deg, #A78BFA, var(--accent))`
-- `--glass-bg: rgba(255,255,255,0.03)`
-- `--glass-border: rgba(255,255,255,0.08)`
-- `--shadow-soft: 0 1px 2px rgba(0,0,0,.2), 0 8px 24px rgba(0,0,0,.25)`
-- Bump `--radius` to `0.875rem` (14px) so cards land at ~16px via `rounded-2xl`
-- Global transition default: 200ms ease (via utility class `.transition-smooth`)
-- Tool glow vars: `--glow-chat`, `--glow-email`, `--glow-planner`, `--glow-meeting`, `--glow-research` (rgba of each Kandinsky color at 0.15)
+The existing route components already consume these exact field names except for `optimizationTip`, which I'll surface in `planner.tsx` as the "Optimization tip" footer if it isn't already.
 
-Add `.glass-card` utility: bg `--glass-bg`, border `--glass-border`, `backdrop-filter: blur(12px)`, `rounded-2xl`, hover: translate-y-[-2px] + tool-colored box-shadow glow (set via inline `--glow` CSS var per card).
+## 4. Simulation disclaimer banner
+- Create `src/components/sim-banner.tsx` exporting `<SimBanner color={string} />`. Renders:
+  ```
+  <div className="mb-6 rounded-lg border px-4 py-2 text-xs text-muted-foreground"
+       style={{
+         background: "rgba(255,255,255,0.03)",
+         borderColor: "rgba(255,255,255,0.06)",
+         borderLeft: `2px solid ${color}`,
+       }}>
+    🔬 Demo Mode — Responses are simulated to showcase the app's architecture and prompt engineering. In production, these connect to AI models like GPT-4 or Claude.
+  </div>
+  ```
+- Render `<SimBanner color={tool.colorVar} />` directly under `<ToolHeader />` in all five tool routes: `chat.tsx`, `email.tsx`, `planner.tsx`, `meetings.tsx`, `research.tsx`.
 
-## 3. Hero (`src/routes/index.tsx`)
-- Remove logo `<img>`
-- Increase vertical padding (`py-24 md:py-32`), wider max-w
-- Replace heading with `<BrandMark size="xl" />` (no separate "Taskela AI" line)
-- Tagline "Your AI-Powered Workplace Productivity Suite" in muted-foreground
-- Keep the longer description paragraph
-
-Feature grid:
-- Layout: `lg:grid-cols-3` for top row (Chat, Email, Planner), `lg:grid-cols-2` for bottom row (Meetings, Research) — clean 3+2
-- Each card uses `.glass-card` with `style={{ '--glow': t.glowVar }}`
-- Card content: header row with `<Icon className="h-5 w-5" style={{color: t.colorVar}}/>` + tool name inline; one-line description; "Open →" link bottom in muted text, accent on hover
-- Remove Kandinsky tagline label and colored icon container and left border bar
-
-## 4. Sidebar (`src/components/app-sidebar.tsx`)
-- Header: replace `<img>` with `<BrandMark size="sm" tagline />` (collapsed state shows just "T·AI" or the gradient "A")
-- Nav items: drop colored dot; active state = left 2px border in tool color (`box-shadow: inset 2px 0 0 var(--tool-x)`) + subtle bg `rgba(255,255,255,.04)` instead of full primary fill
-- Increase `gap-y` between menu items (py-1 → py-2)
-- Footer: shorten to "© Taskela AI" (Kandinsky note moves to About page)
-
-Override `SidebarMenuButton` active styling locally via className using `data-[active=true]:` variants — no shadcn file edits.
-
-## 5. Tool pages (chat/email/planner/meetings/research)
-Update `ToolHeader` (`src/components/tool-header.tsx`):
-- Remove colored icon square
-- Remove Kandinsky tagline
-- Render: small inline icon (tool color) + `<h1>` title + one-line description under it
-- Reduce vertical mb
-
-Page shells:
-- Wrap input areas: textareas use `bg-transparent border border-[--glass-border] focus:border-accent rounded-xl`
-- Output containers swap from default Card to `.glass-card`
-- Add more page padding: `px-6 md:px-10 py-10 md:py-14`, `max-w-4xl mx-auto`
-
-## 6. PromptViewer (`src/components/prompt-viewer.tsx`)
-- Remove box look. Render as a small text-link trigger: "View prompt" with chevron, `text-xs text-muted-foreground hover:text-foreground`
-- Expanded content: indented monospace block with left border, no card background
-
-## 7. Root header & footer (`src/routes/__root.tsx`)
-- Header: drop the "Taskela AI · Tasking For You" string (brand lives in sidebar now); keep SidebarTrigger + ThemeToggle, slightly taller (h-16), no border (use subtle bottom shadow)
-- Footer: keep credit line, lighter, more padding
-
-## 8. About page
-Add a "Synesthetic Color Palette" section listing each tool with its Kandinsky tagline (the labels removed from the home cards land here).
+## 5. Runtime / SSR error sweep
+The current "SSR rendering failed" error has no stack. Likely cause is one of the tool routes throwing during simulated generation when a field is missing. Rewriting `simulated-ai.ts` to always populate every field (step 3) eliminates the obvious source. While editing each tool page to add the banner, I'll also confirm:
+- No top-level `navigator` / `window` usage.
+- All consumers read only fields the new simulator guarantees.
+- `chat.tsx` imports `CHAT_STARTERS` from `simulated-ai.ts` instead of the local `STARTERS` constant (single source of truth, matches spec wording).
 
 ## Out of scope
-- No functional/logic changes to simulated AI
-- No new routes, no backend, no dependency installs
-- Light mode tokens left intact; dark stays default
-- Logo PNG file remains on disk (unused) — not deleted to avoid asset churn
+- No new routes, dependencies, or backend.
+- No restyle of cards/sidebar beyond the banner + glow.
+- Light-mode tuning of the glow is left at defaults (lavender reads fine on both themes).
 
 ## Files touched
-- new: `src/components/brand-mark.tsx`
-- edit: `src/styles.css`, `src/routes/index.tsx`, `src/routes/__root.tsx`, `src/routes/about.tsx`, `src/components/app-sidebar.tsx`, `src/components/tool-header.tsx`, `src/components/prompt-viewer.tsx`
-- light edits to 5 tool routes for padding/glass-card output wrappers
+- edit: `src/styles.css`, `src/components/brand-mark.tsx`, `src/routes/index.tsx`, `src/lib/simulated-ai.ts`, `src/routes/chat.tsx`, `src/routes/email.tsx`, `src/routes/planner.tsx`, `src/routes/meetings.tsx`, `src/routes/research.tsx`
+- new: `src/components/sim-banner.tsx`
