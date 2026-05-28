@@ -24,13 +24,6 @@ export const Route = createFileRoute("/chat")({
 
 interface Msg { role: "user" | "assistant"; content: string }
 
-const STARTERS = [
-  "Help me plan my day",
-  "Summarize this document",
-  "Draft a quick email",
-  "What are best practices for time management?",
-];
-
 function ChatPage() {
   const tool = TOOLS.find((t) => t.key === "chat")!;
   const [messages, setMessages] = useState<Msg[]>([]);
