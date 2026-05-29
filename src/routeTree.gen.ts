@@ -17,6 +17,10 @@ import { Route as EmailRouteImport } from './routes/email'
 import { Route as ChatRouteImport } from './routes/chat'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ApiResearchRouteImport } from './routes/api/research'
+import { Route as ApiPlannerRouteImport } from './routes/api/planner'
+import { Route as ApiMeetingsRouteImport } from './routes/api/meetings'
+import { Route as ApiEmailRouteImport } from './routes/api/email'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 
 const ResponsibleAiRoute = ResponsibleAiRouteImport.update({
@@ -59,6 +63,26 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiResearchRoute = ApiResearchRouteImport.update({
+  id: '/api/research',
+  path: '/api/research',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPlannerRoute = ApiPlannerRouteImport.update({
+  id: '/api/planner',
+  path: '/api/planner',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiMeetingsRoute = ApiMeetingsRouteImport.update({
+  id: '/api/meetings',
+  path: '/api/meetings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiEmailRoute = ApiEmailRouteImport.update({
+  id: '/api/email',
+  path: '/api/email',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiChatRoute = ApiChatRouteImport.update({
   id: '/api/chat',
   path: '/api/chat',
@@ -75,6 +99,10 @@ export interface FileRoutesByFullPath {
   '/research': typeof ResearchRoute
   '/responsible-ai': typeof ResponsibleAiRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/email': typeof ApiEmailRoute
+  '/api/meetings': typeof ApiMeetingsRoute
+  '/api/planner': typeof ApiPlannerRoute
+  '/api/research': typeof ApiResearchRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -86,6 +114,10 @@ export interface FileRoutesByTo {
   '/research': typeof ResearchRoute
   '/responsible-ai': typeof ResponsibleAiRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/email': typeof ApiEmailRoute
+  '/api/meetings': typeof ApiMeetingsRoute
+  '/api/planner': typeof ApiPlannerRoute
+  '/api/research': typeof ApiResearchRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -98,6 +130,10 @@ export interface FileRoutesById {
   '/research': typeof ResearchRoute
   '/responsible-ai': typeof ResponsibleAiRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/email': typeof ApiEmailRoute
+  '/api/meetings': typeof ApiMeetingsRoute
+  '/api/planner': typeof ApiPlannerRoute
+  '/api/research': typeof ApiResearchRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -111,6 +147,10 @@ export interface FileRouteTypes {
     | '/research'
     | '/responsible-ai'
     | '/api/chat'
+    | '/api/email'
+    | '/api/meetings'
+    | '/api/planner'
+    | '/api/research'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -122,6 +162,10 @@ export interface FileRouteTypes {
     | '/research'
     | '/responsible-ai'
     | '/api/chat'
+    | '/api/email'
+    | '/api/meetings'
+    | '/api/planner'
+    | '/api/research'
   id:
     | '__root__'
     | '/'
@@ -133,6 +177,10 @@ export interface FileRouteTypes {
     | '/research'
     | '/responsible-ai'
     | '/api/chat'
+    | '/api/email'
+    | '/api/meetings'
+    | '/api/planner'
+    | '/api/research'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -145,6 +193,10 @@ export interface RootRouteChildren {
   ResearchRoute: typeof ResearchRoute
   ResponsibleAiRoute: typeof ResponsibleAiRoute
   ApiChatRoute: typeof ApiChatRoute
+  ApiEmailRoute: typeof ApiEmailRoute
+  ApiMeetingsRoute: typeof ApiMeetingsRoute
+  ApiPlannerRoute: typeof ApiPlannerRoute
+  ApiResearchRoute: typeof ApiResearchRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -205,6 +257,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/research': {
+      id: '/api/research'
+      path: '/api/research'
+      fullPath: '/api/research'
+      preLoaderRoute: typeof ApiResearchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/planner': {
+      id: '/api/planner'
+      path: '/api/planner'
+      fullPath: '/api/planner'
+      preLoaderRoute: typeof ApiPlannerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/meetings': {
+      id: '/api/meetings'
+      path: '/api/meetings'
+      fullPath: '/api/meetings'
+      preLoaderRoute: typeof ApiMeetingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/email': {
+      id: '/api/email'
+      path: '/api/email'
+      fullPath: '/api/email'
+      preLoaderRoute: typeof ApiEmailRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/chat': {
       id: '/api/chat'
       path: '/api/chat'
@@ -225,7 +305,21 @@ const rootRouteChildren: RootRouteChildren = {
   ResearchRoute: ResearchRoute,
   ResponsibleAiRoute: ResponsibleAiRoute,
   ApiChatRoute: ApiChatRoute,
+  ApiEmailRoute: ApiEmailRoute,
+  ApiMeetingsRoute: ApiMeetingsRoute,
+  ApiPlannerRoute: ApiPlannerRoute,
+  ApiResearchRoute: ApiResearchRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
