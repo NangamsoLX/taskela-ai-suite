@@ -1,59 +1,88 @@
-# Plan: Power the 5 Taskela tools with Lovable AI
+# Fix: Stream all 4 AI tools via /api/* routes
 
-Replace the simulated outputs in `src/lib/simulated-ai.ts` with real Lovable AI Gateway calls (model: `google/gemini-3-flash-preview`) using the AI SDK. Keep all UI, glassmorphism, Kandinsky colors, animations, View Prompt collapsibles, the SimBanner (with updated copy), the Responsible AI page, and the footer disclaimer untouched.
+The 4 non-chat tools currently use `generateText` + `Output.object` in `src/lib/ai-tools.functions.ts`, which the Lovable AI Gateway does not support. Chat works because it uses raw `streamText` at `/api/chat`. We'll replicate that pattern for the other 4 tools.
 
-## 1. Backend setup (TanStack server)
+## Backend — 4 new streaming routes
 
-- Ensure `LOVABLE_API_KEY` is provisioned (use `ai_gateway--create` if missing).
-- Create `src/lib/ai-gateway.server.ts` with the canonical `createLovableAiGatewayProvider` helper (per the Lovable AI Gateway knowledge — `@ai-sdk/openai-compatible`, `Lovable-API-Key` header, `X-Lovable-AIG-SDK: vercel-ai-sdk`, run-id capture wrapper).
-- Install deps: `ai`, `@ai-sdk/openai-compatible`, `@ai-sdk/react`, `zod` (only those not already present).
+Create, each modeled exactly after `src/routes/api/chat.ts`:
 
-## 2. Endpoints
+- `src/routes/api/email.ts`
+- `src/routes/api/planner.ts`
+- `src/routes/api/meetings.ts`
+- `src/routes/api/research.ts`
 
-### a) Streaming chat route — `src/routes/api/chat.ts`
-- `POST` handler using `streamText` + `toUIMessageStreamResponse`, wrapped with `withLovableAiGatewayRunIdHeader`.
-- System prompt: short workplace assistant persona.
-- Model: `google/gemini-3-flash-preview`.
+Each route:
+- POST handler reads `{ messages }` (UIMessage[]) from request body.
+- Uses `createLovableAiGatewayProvider(process.env.LOVABLE_API_KEY)` + `LOVABLE_MODEL` (`google/gemini-3-flash-preview`).
+- Calls `streamText({ model, system, messages: await convertToModelMessages(messages) })`.
+- Returns `result.toUIMessageStreamResponse({ originalMessages: messages })`.
+- System prompts (verbatim from request):
+  - Email: `"You are a professional email assistant. Respond ONLY with a raw JSON object. No markdown, no code fences, no explanation before or after. Structure: {\"subject\": \"string\", \"greeting\": \"string\", \"body\": \"paragraphs separated by \\n\\n\", \"signoff\": \"string\"}"`
+  - Planner: `"You are a task planning assistant. Respond ONLY with a raw JSON object. ... Structure: {\"tasks\": [{\"time\": \"09:00-10:30\", \"title\": \"description\", \"priority\": \"High\", \"note\": \"optional\"}], \"optimizationTip\": \"tip\"}"`
+  - Meetings: `"You are a meeting notes assistant. ... Structure: {\"summary\": \"2-3 sentences\", \"decisions\": [\"string\"], \"actions\": [{\"task\": \"string\", \"owner\": \"name\", \"deadline\": \"date\"}], \"deadlines\": [\"string\"]}"`
+  - Research: `"You are a research assistant. ... Structure: {\"overview\": \"paragraph\", \"insights\": [{\"title\": \"string\", \"detail\": \"string\"}], \"recommendations\": [\"string\"], \"simple\": \"simplified explanation\"}"`
 
-### b) One-shot structured server functions — `src/lib/ai-tools.functions.ts`
-Four `createServerFn({ method: "POST" })` handlers using `generateText` with `Output.object(...)` (Zod schemas) so the UI can render structured cards reliably:
+## Remove old server functions
 
-- `generateEmailFn` → `{ subject, greeting, body, signoff }` + returns the exact `prompt` string sent.
-- `generatePlanFn` → `{ tasks: [{ time, title, priority, note? }], optimizationTip }` + `prompt`.
-- `summarizeMeetingFn` → `{ summary, decisions[], actions: [{task, owner, deadline}], deadlines[] }` + `prompt`.
-- `researchTopicFn` → `{ overview, insights: [{title, detail}], recommendations[], simple }` + `prompt`.
+Delete `src/lib/ai-tools.functions.ts` (uses `Output.object`). Remove all `useServerFn(...)` calls for those handlers in the 4 route components.
 
-Each handler:
-- Builds the exact prompt string specified in the user request (interpolating role/tone/topic/scope/priority/notes).
-- Reads `process.env.LOVABLE_API_KEY` inside the handler; returns a clear error on 402/429/missing key.
-- Returns `{ data, prompt }` so the View Prompt collapsible shows the real prompt sent.
+## Shared helpers
 
-## 3. Frontend changes
+New `src/lib/extract-json.ts` with `extractJSON(raw: string)`:
+1. `JSON.parse` directly.
+2. Strip ```json / ``` fences.
+3. Slice from first `{`/`[` to matching last `}`/`]`.
+4. Fallback: strip trailing commas + control chars, retry.
+5. On final failure, throw — caller falls back to raw text.
 
-### Chat (`src/routes/chat.tsx`)
-- Replace `simulateChatReply` with `@ai-sdk/react` `useChat` + `DefaultChatTransport({ api: "/api/chat" })`.
-- Keep starter chips (call `sendMessage({ text })`), typing indicator while `status === "submitted" | "streaming"`, Trash to clear, markdown rendering of streamed assistant `parts`.
-- User bubble keeps Kandinsky color styling.
+New `src/lib/build-prompts.ts` that builds the user-facing prompt strings (same content as today, used for both the AI message and the View Prompt block) for email/planner/meetings/research.
 
-### Email / Planner / Meetings / Research routes
-- Replace `simulateEmail/Plan/MeetingSummary/Research` calls with `useServerFn(...)` wrapping the new server functions.
-- Preserve existing form fields, loading states, output layouts, and `<PromptViewer prompt={...} />`, now fed with the real prompt returned from the server.
-- On error: toast + inline friendly message ("AI request failed — please try again"). Handle 402 (credits) and 429 (rate limit) with specific copy.
+## Frontend — 4 tool pages
 
-### Shared
-- Update `src/components/sim-banner.tsx` copy to: `🤖 Powered by AI — Responses are generated in real-time. Always verify AI-generated content before use.` (keep the Kandinsky left-border accent and styling).
-- Delete `src/lib/simulated-ai.ts` once all imports are migrated (or keep `CHAT_STARTERS` constant by moving it to `src/lib/chat-starters.ts`).
+For `src/routes/email.tsx`, `planner.tsx`, `meetings.tsx`, `research.tsx`:
 
-## 4. Verification
+- Replace `useServerFn(...)` with `useChat({ transport: new DefaultChatTransport({ api: "/api/<tool>" }) })` from `@ai-sdk/react`.
+- "Generate" button: build prompt via `build-prompts`, call `sendMessage({ text: prompt })`, store prompt in local state for View Prompt.
+- Derive `streamingText` by joining last assistant message's text parts.
+- `status === "submitted" | "streaming"` → loading state.
+- On completion (status returns to `ready` with assistant message present): call `extractJSON(streamingText)`; on success render structured cards; on failure render raw text in a styled `<pre>`-style block. Never toast an error for parse failures.
+- Keep all existing card layouts, copy buttons, SimBanner, PromptViewer, AiDisclaimer.
 
-- Build passes.
-- Manually test each of the 5 tools in preview: chat streams, other 4 return structured output rendered in existing cards, View Prompt shows the real prompt.
-- Confirm SimBanner text updated and Responsible AI page + footer disclaimer untouched.
+## Streaming UX
 
-## Technical notes
+Add to `src/styles.css`:
+- `@keyframes shimmer` for skeleton gradient.
+- `@keyframes fadeSlideUp` (opacity 0→1, translateY 8px→0, 300ms ease-out).
+- `@keyframes pulseDot` for typing dots.
+- Utility classes: `.skeleton-shimmer`, `.fade-slide-up`, with `.delay-0/150/300/450/600` for staggering.
+- `.copy-check` brief scale + check swap.
 
-- Model: `google/gemini-3-flash-preview` for all 5 tools.
-- Use `Output.object` (AI SDK structured output) instead of asking the model to return JSON and parsing manually.
-- All AI calls run server-side; `LOVABLE_API_KEY` never reaches the browser.
-- Chat route uses streaming; the other 4 tools use one-shot `generateText` (faster cards, simpler UI).
-- `attachSupabaseAuth` middleware is NOT required (no auth needed for these tools).
+New `src/components/typing-dots.tsx` — three pulsing dots using `pulseDot` keyframes, colored via `tool.colorVar`.
+
+While loading: replace current `<Skeleton />` blocks with shimmer skeletons + TypingDots. Optionally stream partial text into a faint preview area.
+
+When parsed result arrives: wrap output container in `.fade-slide-up`, and each section/card gets `.fade-slide-up .delay-{n*150}`. PromptViewer gets the largest delay.
+
+Copy button: on click, swap icon to `Check` for 1.2s with `.copy-check` animation.
+
+## Cleanup
+
+- Delete `src/lib/ai-tools.functions.ts`.
+- Confirm no remaining `Output.object`/`experimental_output` imports project-wide.
+- Keep `/api/chat`, `SimBanner` copy, Responsible AI page, footer disclaimer, Kandinsky colors, glassmorphism untouched.
+- No package additions needed (`ai`, `@ai-sdk/react`, `@ai-sdk/openai-compatible` already installed).
+
+## Files
+
+Created:
+- `src/routes/api/email.ts`, `src/routes/api/planner.ts`, `src/routes/api/meetings.ts`, `src/routes/api/research.ts`
+- `src/lib/extract-json.ts`, `src/lib/build-prompts.ts`
+- `src/components/typing-dots.tsx`
+
+Edited:
+- `src/routes/email.tsx`, `src/routes/planner.tsx`, `src/routes/meetings.tsx`, `src/routes/research.tsx`
+- `src/styles.css`
+- `src/routeTree.gen.ts` (auto-regenerated)
+
+Deleted:
+- `src/lib/ai-tools.functions.ts`
